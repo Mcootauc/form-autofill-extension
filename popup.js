@@ -28,24 +28,16 @@ function parseFormText(text) {
     // Map specific fields for pet information
     result.country = 'United States';
 
-    // Handle microchip
-    handleMicrochip(result);
-
     // Handle gender mapping
     mapGender(result);
+
+    // Handle species mapping
+    mapSpecies(result);
 
     // Parse age
     parseAge(result);
 
     return result;
-}
-
-function handleMicrochip(result) {
-    if (result.microchip === 'false') {
-        result.id_chip = '';
-    } else if (result.microchip && result.microchip !== 'true') {
-        result.id_chip = result.microchip;
-    }
 }
 
 function mapGender(result) {
@@ -54,15 +46,24 @@ function mapGender(result) {
         return;
     }
 
-    const isMale = result.sex === 'Male';
     const isNeutered = result.spayed_neutered === 'Yes';
 
-    if (isMale) {
+    if (result.sex === 'Male') {
         result.gender_id = isNeutered ? '1' : '2'; // Neutered Male : Male
     } else if (result.sex === 'Female') {
         result.gender_id = isNeutered ? '4' : '5'; // Spayed Female : Female
     } else {
         result.gender_id = '8'; // Unknown
+    }
+}
+
+function mapSpecies(result) {
+    if (result.species === 'Canine') {
+        result.species_id = '4'; // Canine Value
+    } else if (result.species === 'Feline') {
+        result.species_id = '8'; // Feline Value
+    } else {
+        result.species_id = ''; // Unknown
     }
 }
 
@@ -95,6 +96,65 @@ function fillFormOnPage(data) {
             element.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
+
+    // // Function to handle Select2 dropdowns specifically
+    // function updateSelect2(selectId, value, text) {
+    //     const select = document.getElementById(selectId);
+    //     if (!select || !value) return;
+
+    //     // Check if the option already exists
+    //     let option = select.querySelector(`option[value="${value}"]`);
+
+    //     // If option doesn't exist, create it
+    //     if (!option) {
+    //         option = document.createElement('option');
+    //         option.value = value;
+    //         option.text = text;
+    //         select.appendChild(option);
+    //     }
+
+    //     // Set selected on the option
+    //     option.selected = true;
+
+    //     // Trigger native change event
+    //     select.dispatchEvent(new Event('change', { bubbles: true }));
+
+    //     // If jQuery and Select2 are available, need to update the Select2 instance
+    //     if (typeof $ !== 'undefined') {
+    //         // Create a data object in format Select2 expects
+    //         const data = {
+    //             id: value,
+    //             text: text,
+    //         };
+
+    //         // Set the data and trigger change
+    //         const $select = $(select);
+
+    //         // First clear any previous selection
+    //         $select.val(null).trigger('change');
+
+    //         // Then create a new option and update selection
+    //         const newOption = new Option(text, value, true, true);
+    //         $select.append(newOption).trigger('change');
+
+    //         // Update the displayed text in the Select2 container
+    //         const containerId = `select2-${selectId}-container`;
+    //         const container = document.getElementById(containerId);
+    //         if (container) {
+    //             container.textContent = text;
+    //             // Remove any placeholder classes
+    //             container.classList.remove('select2-selection__placeholder');
+    //         }
+
+    //         // Manually trigger the select2:select event which other components might listen for
+    //         $select.trigger({
+    //             type: 'select2:select',
+    //             params: {
+    //                 data: data,
+    //             },
+    //         });
+    //     }
+    // }
 
     console.log('Filling form with data:', data);
     console.log('Current document:', document);
@@ -137,45 +197,22 @@ function fillFormOnPage(data) {
     const petNameInput = document.getElementsByName('patient_name')[0];
     const microchipInput = document.getElementById('microchip');
     const colorInput = document.getElementById('tagsColour');
-    // const speciesInput = document.getElementsByName(
-    //     'select2 select2-container select2-container--neo select2-container--above'
-    // )
-    // [0];
     const sexInput = document.getElementsByName('gender_id')[0];
     const yearInput = document.getElementsByName('age_y')[0];
     const monthInput = document.getElementsByName('age_m')[0];
     const dayInput = document.getElementsByName('age_d')[0];
+
     dispatchInputEvent(petNameInput, data.name);
-    dispatchInputEvent(microchipInput, data.id_chip);
+    dispatchInputEvent(microchipInput, data.microchip);
     dispatchInputEvent(colorInput, data.color);
-    // dispatchInputEvent(speciesInput, data.species);
     dispatchInputEvent(sexInput, data.gender_id);
     dispatchInputEvent(yearInput, data.age_y);
     dispatchInputEvent(monthInput, data.age_m);
     dispatchInputEvent(dayInput, data.age_d);
 
-    // // Handle Select2 species dropdown
-    // const speciesSelect = document.getElementById('speciesId');
-    // if (speciesSelect && data.species) {
-    //     // Find the option that matches the species text
-    //     const speciesOptions = Array.from(speciesSelect.options);
-    //     const targetOption = speciesOptions.find(
-    //         (option) => option.text.toLowerCase() === data.species.toLowerCase()
-    //     );
-
-    //     if (targetOption) {
-    //         // Set the value
-    //         speciesSelect.value = targetOption.value;
-
-    //         // Trigger both native change event and Select2 change event
-    //         speciesSelect.dispatchEvent(new Event('change', { bubbles: true }));
-
-    //         // If jQuery and Select2 are available
-    //         if (typeof $ !== 'undefined') {
-    //             $(speciesSelect).trigger('change.select2');
-    //         }
-    //     }
-    // }
+    // // Handle the Select2 for species
+    // const speciesText = data.species || '';
+    // updateSelect2('speciesId', data.species_id, speciesText);
 
     // Example data:
     // address : "11110 West Pico Boulevard"
@@ -192,7 +229,7 @@ function fillFormOnPage(data) {
     // gender_id : "5"
     // id_chip : ""
     // last_name : "Cootauco"
-    // microchip : "false"
+    // microchip : "1231231231"
     // name : "Butter"
     // patient_name : "Butter"
     // pet_information : ""
