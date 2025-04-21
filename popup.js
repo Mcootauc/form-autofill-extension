@@ -28,13 +28,7 @@ function parseFormText(text) {
     // Map specific fields for pet information
     result.country = 'United States';
 
-    // Handle gender mapping
     mapGender(result);
-
-    // Handle species mapping
-    mapSpecies(result);
-
-    // Parse age
     parseAge(result);
 
     return result;
@@ -54,16 +48,6 @@ function mapGender(result) {
         result.gender_id = isNeutered ? '4' : '5'; // Spayed Female : Female
     } else {
         result.gender_id = '8'; // Unknown
-    }
-}
-
-function mapSpecies(result) {
-    if (result.species === 'Canine') {
-        result.species_id = '4'; // Canine Value
-    } else if (result.species === 'Feline') {
-        result.species_id = '8'; // Feline Value
-    } else {
-        result.species_id = ''; // Unknown
     }
 }
 
@@ -96,65 +80,6 @@ function fillFormOnPage(data) {
             element.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
-
-    // // Function to handle Select2 dropdowns specifically
-    // function updateSelect2(selectId, value, text) {
-    //     const select = document.getElementById(selectId);
-    //     if (!select || !value) return;
-
-    //     // Check if the option already exists
-    //     let option = select.querySelector(`option[value="${value}"]`);
-
-    //     // If option doesn't exist, create it
-    //     if (!option) {
-    //         option = document.createElement('option');
-    //         option.value = value;
-    //         option.text = text;
-    //         select.appendChild(option);
-    //     }
-
-    //     // Set selected on the option
-    //     option.selected = true;
-
-    //     // Trigger native change event
-    //     select.dispatchEvent(new Event('change', { bubbles: true }));
-
-    //     // If jQuery and Select2 are available, need to update the Select2 instance
-    //     if (typeof $ !== 'undefined') {
-    //         // Create a data object in format Select2 expects
-    //         const data = {
-    //             id: value,
-    //             text: text,
-    //         };
-
-    //         // Set the data and trigger change
-    //         const $select = $(select);
-
-    //         // First clear any previous selection
-    //         $select.val(null).trigger('change');
-
-    //         // Then create a new option and update selection
-    //         const newOption = new Option(text, value, true, true);
-    //         $select.append(newOption).trigger('change');
-
-    //         // Update the displayed text in the Select2 container
-    //         const containerId = `select2-${selectId}-container`;
-    //         const container = document.getElementById(containerId);
-    //         if (container) {
-    //             container.textContent = text;
-    //             // Remove any placeholder classes
-    //             container.classList.remove('select2-selection__placeholder');
-    //         }
-
-    //         // Manually trigger the select2:select event which other components might listen for
-    //         $select.trigger({
-    //             type: 'select2:select',
-    //             params: {
-    //                 data: data,
-    //             },
-    //         });
-    //     }
-    // }
 
     console.log('Filling form with data:', data);
     console.log('Current document:', document);
@@ -201,7 +126,6 @@ function fillFormOnPage(data) {
     const yearInput = document.getElementsByName('age_y')[0];
     const monthInput = document.getElementsByName('age_m')[0];
     const dayInput = document.getElementsByName('age_d')[0];
-
     dispatchInputEvent(petNameInput, data.name);
     dispatchInputEvent(microchipInput, data.microchip);
     dispatchInputEvent(colorInput, data.color);
@@ -210,33 +134,203 @@ function fillFormOnPage(data) {
     dispatchInputEvent(monthInput, data.age_m);
     dispatchInputEvent(dayInput, data.age_d);
 
-    // // Handle the Select2 for species
-    // const speciesText = data.species || '';
-    // updateSelect2('speciesId', data.species_id, speciesText);
+    // Handle the input for Species
+    const speciesSelect = document.querySelector('#speciesId');
+    if (speciesSelect) {
+        const select2Container = document.querySelector(
+            '.select2-container--neo'
+        );
+        if (select2Container) {
+            const select2Selection =
+                select2Container.querySelector('.select2-selection');
+            if (select2Selection) {
+                // Mouse event
+                const mouseDown = new MouseEvent('mousedown', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                });
+                select2Selection.dispatchEvent(mouseDown);
 
-    // Example data:
-    // address : "11110 West Pico Boulevard"
-    // age : "12 years 6 months 8 days"
-    // age_d : "0"
-    // age_m : "0"
-    // age_y : "12"
-    // breed : "Yorkie"
-    // city : "Los Angeles"
-    // client_information : ""
-    // color : "Black/Gray"
-    // email : "Mcootauc@gmail.com"
-    // first_name : "Mitchell"
-    // gender_id : "5"
-    // id_chip : ""
-    // last_name : "Cootauco"
-    // microchip : "1231231231"
-    // name : "Butter"
-    // patient_name : "Butter"
-    // pet_information : ""
-    // phone : "6267823100"
-    // sex : "Female"
-    // spayed_neutered : "Yes"
-    // species : "Canine"
-    // state : "California"
-    // zip_code : "90064"
+                //If needed, we can try to select an option programmatically
+                setTimeout(() => {
+                    // Try to find and click the desired option in the dropdown based on text content
+                    const speciesText = data.species || 'Other Large'; // Default to Canine if not specified
+
+                    // Get all options in the dropdown
+                    const optionsList = document.querySelectorAll(
+                        '#select2-speciesId-results .select2-results__option'
+                    );
+
+                    // Find the option with matching text and click it
+                    optionsList.forEach((option) => {
+                        if (option.textContent === speciesText) {
+                            const mouseDown = new MouseEvent('mousedown', {
+                                bubbles: true,
+                                cancelable: true,
+                                view: window,
+                            });
+                            const mouseUp = new MouseEvent('mouseup', {
+                                bubbles: true,
+                                cancelable: true,
+                                view: window,
+                            });
+
+                            // make sure that option is both visible and active
+                            option.focus();
+
+                            // simulate user pressing down then releasing
+                            option.dispatchEvent(mouseDown);
+                            option.dispatchEvent(mouseUp);
+
+                            // finally trigger the high‑level click
+                            option.click();
+                        }
+                    });
+                }, 500);
+            }
+        }
+    }
+
+    // After handling species, add a delay before handling breed
+    // Check if species has been selected before trying to handle breed
+    const waitForBreedEnabled = () => {
+        const breedSelect = document.getElementById('breedId');
+
+        if (breedSelect) {
+            if (!breedSelect.disabled) {
+                handleBreedSelection();
+            } else {
+                setTimeout(waitForBreedEnabled, 500); // Check again in 500ms
+            }
+        }
+    };
+
+    // Set up a polling function to wait for species to be selected
+    setTimeout(waitForBreedEnabled, 0); // Initial delay before first check
+
+    // Function to handle the breed selection once it's enabled
+    function handleBreedSelection() {
+        const breedSelect = document.getElementById('breedId');
+        if (!breedSelect) return;
+
+        const mouseDown = new MouseEvent('mousedown', {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+        });
+        const mouseUp = new MouseEvent('mouseup', {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+        });
+
+        // Find the breed container
+        const breedContainer = findBreedContainer();
+        if (!breedContainer) {
+            console.log('Could not find breed container');
+            return;
+        }
+
+        // Open the dropdown
+        openBreedDropdown(breedContainer);
+
+        // Helper function to find breed container
+        function findBreedContainer() {
+            const containers = document.querySelectorAll('.select2-container');
+            for (let container of containers) {
+                if (
+                    container.previousElementSibling &&
+                    container.previousElementSibling.id === 'breedId'
+                ) {
+                    return container;
+                }
+            }
+            return null;
+        }
+
+        // Helper function to open the dropdown
+        function openBreedDropdown(container) {
+            const selection = container.querySelector('.select2-selection');
+            if (!selection) return;
+
+            selection.dispatchEvent(mouseDown);
+
+            const searchField = document.querySelector(
+                '.select2-search__field'
+            );
+            if (!searchField) {
+                console.log('Could not find search field');
+                return;
+            }
+
+            // Set search value and initiate search
+            searchField.value = data.breed || '';
+            searchField.dispatchEvent(new Event('input', { bubbles: true }));
+            setTimeout(waitForSearchResults, 500);
+        }
+
+        // Helper function to check if an option is valid
+        function isValidBreedOption(option) {
+            const text = option.textContent.trim();
+            return (
+                text !== '' &&
+                !text.includes('Searching') &&
+                !text.includes('No results') &&
+                !text.includes('Type to search')
+            );
+        }
+
+        // Helper function to select a breed option
+        function selectBreedOption(option) {
+            option.focus();
+            option.dispatchEvent(mouseDown);
+            option.dispatchEvent(mouseUp);
+            option.click();
+            console.log('Selected breed:', option.textContent);
+        }
+
+        // Helper function to wait for search results
+        function waitForSearchResults() {
+            const optionsList = document.querySelectorAll(
+                '#select2-breedId-results .select2-results__option'
+            );
+
+            // Check if still searching or not ready
+            const isSearching = Array.from(optionsList).some(
+                (option) =>
+                    option.textContent.includes('Searching') ||
+                    option.classList.contains('loading-results')
+            );
+
+            const isNotReady =
+                optionsList.length === 1 &&
+                (optionsList[0].textContent.trim() === '' ||
+                    optionsList[0].textContent.includes('No results') ||
+                    optionsList[0].textContent.includes('Type to search'));
+
+            if (isSearching || isNotReady) {
+                setTimeout(waitForSearchResults, 200);
+                return;
+            }
+
+            // Results are ready, find and select an option
+            console.log(
+                'Search results loaded!',
+                optionsList.length,
+                'options'
+            );
+            if (optionsList.length === 0) return;
+
+            // Find first valid option using for-of loop
+            for (const option of optionsList) {
+                if (isValidBreedOption(option)) {
+                    selectBreedOption(option);
+                    return;
+                }
+            }
+
+            console.log('No valid breed options found');
+        }
+    }
 }
